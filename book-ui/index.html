@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Review Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-book"></i> Book Reviews
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showSection('books')">Books</a>
+                    </li>
+                    <li class="nav-item" id="myReviewsNav" style="display: none;">
+                        <a class="nav-link" href="#" onclick="showSection('myReviews')">My Reviews</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item" id="loginNav">
+                        <a class="nav-link" href="#" onclick="showSection('login')">Login</a>
+                    </li>
+                    <li class="nav-item" id="registerNav">
+                        <a class="nav-link" href="#" onclick="showSection('register')">Register</a>
+                    </li>
+                    <li class="nav-item" id="userNav" style="display: none;">
+                        <span class="navbar-text me-3" id="userWelcome"></span>
+                        <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+
+        <!-- Books Section -->
+        <div id="booksSection" class="content-section">
+            <div class="row">
+                <div class="col-md-8">
+                    <h2>Book Reviews</h2>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search books...">
+                        <button class="btn btn-outline-secondary" onclick="searchBooks()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3" id="addBookSection" style="display: none;">
+                <div class="col-md-12">
+                    <button class="btn btn-success" onclick="showAddBookForm()">
+                        <i class="fas fa-plus"></i> Add New Book
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add Book Form -->
+            <div id="addBookForm" class="card mt-3" style="display: none;">
+                <div class="card-body">
+                    <h5 class="card-title">Add New Book</h5>
+                    <form onsubmit="addBook(event)">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Title *</label>
+                                    <input type="text" class="form-control" id="bookTitle" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Author *</label>
+                                    <input type="text" class="form-control" id="bookAuthor" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">ISBN</label>
+                                    <input type="text" class="form-control" id="bookIsbn">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="bookDescription" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Book</button>
+                        <button type="button" class="btn btn-secondary" onclick="hideAddBookForm()">Cancel</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Books Grid -->
+            <div class="row mt-4" id="booksGrid">
+                <!-- Books will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="content-section" style="display: none;">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title text-center">Login</h3>
+                            <form onsubmit="login(event)">
+                                <div class="mb-3">
+                                    <label class="form-label">Username or Email</label>
+                                    <input type="text" class="form-control" id="loginUsername" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="loginPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Login</button>
+                            </form>
+                            <div class="text-center mt-3">
+                                <p>Don't have an account? <a href="#" onclick="showSection('register')">Register here</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Section -->
+        <div id="registerSection" class="content-section" style="display: none;">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title text-center">Register</h3>
+                            <form onsubmit="register(event)">
+                                <div class="mb-3">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="registerUsername" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="registerEmail" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="registerPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Register</button>
+                            </form>
+                            <div class="text-center mt-3">
+                                <p>Already have an account? <a href="#" onclick="showSection('login')">Login here</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Reviews Section -->
+        <div id="myReviewsSection" class="content-section" style="display: none;">
+            <h2>My Reviews</h2>
+            <div id="myReviewsGrid" class="row">
+                <!-- User reviews will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Book Detail Modal -->
+    <div class="modal fade" id="bookModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookModalTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="bookModalBody">
+                    <!-- Book details and reviews will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal fade" id="reviewModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Write a Review</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form onsubmit="submitReview(event)">
+                        <input type="hidden" id="reviewBookId">
+                        <div class="mb-3">
+                            <label class="form-label">Rating *</label>
+                            <select class="form-select" id="reviewRating" required>
+                                <option value="">Select a rating</option>
+                                <option value="5">⭐⭐⭐⭐⭐ (5 stars)</option>
+                                <option value="4">⭐⭐⭐⭐ (4 stars)</option>
+                                <option value="3">⭐⭐⭐ (3 stars)</option>
+                                <option value="2">⭐⭐ (2 stars)</option>
+                                <option value="1">⭐ (1 star)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Review</label>
+                            <textarea class="form-control" id="reviewText" rows="4" placeholder="Write your review here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

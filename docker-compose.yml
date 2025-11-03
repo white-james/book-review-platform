@@ -1,0 +1,80 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: book-review-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bookreviews
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - book-review-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bookreviews"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Node.js API
+  book-api:
+    build:
+      context: ./book-api
+      dockerfile: Dockerfile
+    container_name: book-review-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: bookreviews
+      DB_USER: postgres
+      DB_PASSWORD: password
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - book-review-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx Frontend
+  book-ui:
+    build:
+      context: ./book-ui
+      dockerfile: Dockerfile
+    container_name: book-review-ui
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - book-api
+    networks:
+      - book-review-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  book-review-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
