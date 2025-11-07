@@ -1,6 +1,6 @@
 # Book Review Platform
 
-A full-stack web application for book reviews built with Node.js, PostgreSQL, and served with Nginx. This project is designed for learning Docker and Kubernetes deployment patterns.
+A full-stack web application for book reviews built with Node.js, PostgreSQL, and served with Nginx. This project is designed for learning Docker.
 
 ## 🚀 Tech Stack
 
@@ -10,7 +10,6 @@ A full-stack web application for book reviews built with Node.js, PostgreSQL, an
 - **Web Server:** Nginx (for serving static files)
 - **Authentication:** JWT (JSON Web Tokens)
 - **Containerization:** Docker & Docker Compose
-- **Orchestration:** Kubernetes (planned)
 
 ## 📋 Features
 
@@ -226,18 +225,6 @@ DB_PASSWORD=password
 - Nginx gzip compression
 - Static asset caching
 - Connection pooling for database
-
-## 🚢 Next Steps (Kubernetes)
-
-This project is designed to be deployed to Kubernetes. Future additions will include:
-
-- Kubernetes manifests (Deployments, Services, ConfigMaps)
-- Helm charts for easy deployment
-- Persistent Volume Claims for database storage
-- Ingress configuration for routing
-- Horizontal Pod Autoscaling
-- Azure Container Registry integration
-- Azure Kubernetes Service (AKS) deployment
 
 ## 🤝 Contributing
 
