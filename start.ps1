@@ -24,8 +24,11 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('start', 'stop', 'restart', 'logs', 'clean', 'build', 'status', 'help')]
-    [string]$Command = 'start'
+    [ValidateSet('start', 'stop', 'restart', 'logs', 'clean', 'build', 'status', 'push', 'help')]
+    [string]$Command = 'start',
+    
+    [Parameter()]
+    [string]$AcrName = 'bookreviewdevacr'
 )
 
 # Set error action preference
@@ -106,7 +109,11 @@ function Show-Usage {
     Write-Host "  clean       Stop services and remove volumes"
     Write-Host "  build       Build all images"
     Write-Host "  status      Show status of all services"
+    Write-Host "  push        Build, tag, and push images to Azure Container Registry"
     Write-Host "  help        Show this help message"
+    Write-Host ""
+    Write-ColorOutput "Parameters:" $Blue
+    Write-Host "  -AcrName    Azure Container Registry name (default: bookreviewdevacr)"
     Write-Host ""
 }
 
@@ -222,6 +229,82 @@ function Show-Status {
     }
 }
 
+function Push-ToAcr {
+    param(
+        [string]$RegistryName
+    )
+    
+    Write-ColorOutput "📦 Pushing images to Azure Container Registry: $RegistryName" $Yellow
+    Write-Host ""
+    
+    # Login to ACR
+    Write-ColorOutput "🔐 Logging into Azure Container Registry..." $Blue
+    try {
+        az acr login --name $RegistryName
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to login to ACR"
+        }
+        Write-ColorOutput "✅ Successfully logged into ACR" $Green
+    }
+    catch {
+        Write-ColorOutput "❌ Failed to login to ACR. Make sure Azure CLI is installed and you're authenticated." $Red
+        Write-ColorOutput "   Run: az login" $Yellow
+        exit 1
+    }
+    
+    # Build images
+    Write-ColorOutput "🔨 Building images..." $Blue
+    try {
+        docker-compose build
+        if ($LASTEXITCODE -ne 0) {
+            throw "Build failed"
+        }
+        Write-ColorOutput "✅ Images built successfully" $Green
+    }
+    catch {
+        Write-ColorOutput "❌ Failed to build images: $($_.Exception.Message)" $Red
+        exit 1
+    }
+    
+    # Tag and push images
+    $registryUrl = "$RegistryName.azurecr.io"
+    $images = @(
+        @{Local = "book-review-platform-book-api"; Remote = "book-api"},
+        @{Local = "book-review-platform-book-ui"; Remote = "book-ui"}
+    )
+    
+    Write-Host ""
+    Write-ColorOutput "🏷️  Tagging and pushing images..." $Blue
+    
+    foreach ($image in $images) {
+        $localTag = "$($image.Local):latest"
+        $remoteTag = "$registryUrl/$($image.Remote):latest"
+        
+        try {
+            Write-Host "   Tagging $localTag -> $remoteTag"
+            docker tag $localTag $remoteTag
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to tag image"
+            }
+            
+            Write-Host "   Pushing $remoteTag"
+            docker push $remoteTag
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to push image"
+            }
+            
+            Write-ColorOutput "   ✅ $($image.Remote) pushed successfully" $Green
+        }
+        catch {
+            Write-ColorOutput "   ❌ Failed to push $($image.Remote): $($_.Exception.Message)" $Red
+            exit 1
+        }
+    }
+    
+    Write-Host ""
+    Write-ColorOutput "🎉 All images successfully pushed to $registryUrl" $Green
+}
+
 # Main execution
 try {
     Show-Header
@@ -249,6 +332,9 @@ try {
         }
         'status' {
             Show-Status
+        }
+        'push' {
+            Push-ToAcr -RegistryName $AcrName
         }
         'help' {
             Show-Usage
