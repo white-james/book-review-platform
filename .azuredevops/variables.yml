@@ -1,0 +1,54 @@
+parameters:
+
+  - name: environment
+    type: string
+    default: ""
+
+variables:
+
+  ##############################################################
+  #######                  Azure DevOps                  #######
+  ##############################################################
+
+  # Library groups
+  - group: 'JamesTest-dev-tfvars'
+  - group: 'book-review-app'
+
+  - name: azure_service_connection
+    value: "JamesTest - dev"
+
+  ##############################################################
+  #######                     Terraform                  #######
+  ##############################################################
+
+  - name: state-key
+    value: ${{ replace('docker-kubernetes-learning-lab.env.tfstate', 'env', parameters.environment) }}
+
+  # Your Terraform directory
+  - name: terraform-directory
+    value: "terraform"
+
+  - name: terraform_installer_version
+    value: "latest"
+
+  ##############################################################
+  #######                       Azure                    #######
+  ##############################################################
+
+  - name: acrName
+    value: ${{ replace('containerappenvacr', 'env', parameters.environment) }}
+
+  - name: dockerNamespace
+    value: ${{ replace('containerappenvacr.azurecr.io', 'env', parameters.environment) }}
+
+  - name: dockerRepository
+    value: 'webimage'
+
+  - name: dockerImageTag
+    value: '$(Build.BuildId)'
+
+  - name: webAppName
+    value: ${{ replace('containerapp-env-app', 'env', parameters.environment) }}
+
+  - name: dockerfilePath
+    value: "src/node/Dockerfile"

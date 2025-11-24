@@ -141,7 +141,6 @@ terraform.tfvars
 
 # Local development files
 local/
-dev/
 
 # Test files
 test-results/
