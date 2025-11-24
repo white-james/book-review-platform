@@ -30,25 +30,3 @@ variables:
 
   - name: terraform_installer_version
     value: "latest"
-
-  ##############################################################
-  #######                       Azure                    #######
-  ##############################################################
-
-  - name: acrName
-    value: ${{ replace('containerappenvacr', 'env', parameters.environment) }}
-
-  - name: dockerNamespace
-    value: ${{ replace('containerappenvacr.azurecr.io', 'env', parameters.environment) }}
-
-  - name: dockerRepository
-    value: 'webimage'
-
-  - name: dockerImageTag
-    value: '$(Build.BuildId)'
-
-  - name: webAppName
-    value: ${{ replace('containerapp-env-app', 'env', parameters.environment) }}
-
-  - name: dockerfilePath
-    value: "src/node/Dockerfile"
