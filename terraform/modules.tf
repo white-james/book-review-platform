@@ -79,7 +79,7 @@ module "container_instance" {
     # Node.js API Backend
     book-api = {
       name   = "book-api"
-      image  = "${module.container_registry.login_server}/book-api:1736221"
+      image  = "${module.container_registry.resource.login_server}/book-api:1736221"
       cpu    = "1"
       memory = "1.5"
       ports = [
