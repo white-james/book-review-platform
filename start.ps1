@@ -269,6 +269,7 @@ function Push-ToAcr {
     # Tag and push images
     $registryUrl = "$RegistryName.azurecr.io"
     $images = @(
+        @{Local = "book-review-platform-postgres"; Remote = "postgres-custom"},
         @{Local = "book-review-platform-book-api"; Remote = "book-api"},
         @{Local = "book-review-platform-book-ui"; Remote = "book-ui"}
     )

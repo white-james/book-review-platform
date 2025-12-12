@@ -1,39 +1,109 @@
-# Docker
-# Build and push an image to Azure Container Registry
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+# Docker Build and Push Pipeline
+# Build and push all Book Review Platform images to Azure Container Registry
+
+name: docker-$(Date:yyyyMMdd)-$(Rev:r)
 
 trigger:
-- main
+  batch: true
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - book-api/**
+      - book-ui/**
+      - database/**
+      - docker-compose.yml
 
 resources:
-- repo: self
+  - repo: self
+
+parameters:
+  - name: environment
+    displayName: Environment
+    type: string
+    default: dev
+    values:
+      - dev
+      - uat
+      - prod
+
+  - name: hostedImage
+    displayName: Microsoft-Hosted Agent Image
+    type: string
+    default: ubuntu-latest
+    values:
+      - ubuntu-latest
+      - windows-latest
 
 variables:
-  # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '2ad8e424-ea3b-4430-832f-530474cb6772'
-  imageRepository: 'jameswhitebcabookreviewplatform'
-  containerRegistry: 'bookreviewdevacr.azurecr.io'
-  dockerfilePath: '$(Build.SourcesDirectory)/book-api/Dockerfile'
-  tag: '$(Build.BuildId)'
+  - template: variables.yml
+    parameters:
+      environment: ${{ parameters.environment }}
 
-  # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+  - name: vmImageName
+    value: ${{ parameters.hostedImage }}
 
 stages:
-- stage: Build
-  displayName: Build and push stage
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - task: Docker@2
-      displayName: Build and push an image to container registry
-      inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
+  - stage: BuildAndPush
+    displayName: 'Build and Push Docker Images'
+    jobs:
+      - job: BuildPostgres
+        displayName: 'Build PostgreSQL Custom Image'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          - task: Docker@2
+            displayName: 'Build and Push PostgreSQL Image'
+            inputs:
+              command: buildAndPush
+              repository: $(postgres_image_name)
+              dockerfile: '$(Build.SourcesDirectory)/database/Dockerfile'
+              containerRegistry: $(acr_service_connection)
+              buildContext: '$(Build.SourcesDirectory)/database'
+              tags: |
+                $(image_tag)
+                latest
+
+      - job: BuildBookAPI
+        displayName: 'Build Book API Image'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          - task: Docker@2
+            displayName: 'Build and Push Book API Image'
+            inputs:
+              command: buildAndPush
+              repository: $(book_api_image_name)
+              dockerfile: '$(Build.SourcesDirectory)/book-api/Dockerfile'
+              containerRegistry: $(acr_service_connection)
+              buildContext: '$(Build.SourcesDirectory)/book-api'
+              tags: |
+                $(image_tag)
+                latest
+
+      - job: BuildBookUI
+        displayName: 'Build Book UI Image'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          - task: Docker@2
+            displayName: 'Build and Push Book UI Image'
+            inputs:
+              command: buildAndPush
+              repository: $(book_ui_image_name)
+              dockerfile: '$(Build.SourcesDirectory)/book-ui/Dockerfile'
+              containerRegistry: $(acr_service_connection)
+              buildContext: '$(Build.SourcesDirectory)/book-ui'
+              tags: |
+                $(image_tag)
+                latest

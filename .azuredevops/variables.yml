@@ -30,3 +30,30 @@ variables:
 
   - name: terraform_installer_version
     value: "latest"
+
+  ##############################################################
+  #######                       Docker                   #######
+  ##############################################################
+
+  - name: acr_name
+    value: ${{ replace('bookreviewenvacr', 'env', parameters.environment) }}
+
+  - name: acr_registry
+    value: ${{ replace('bookreviewenvacr.azurecr.io', 'env', parameters.environment) }}
+
+  # Using the same service connection for all environments (same subscription)
+  - name: acr_service_connection
+    value: 'bookreviewdevacr'
+
+  - name: image_tag
+    value: '$(Build.BuildId)'
+
+  # Image names (consistent with local docker-compose and ACR)
+  - name: postgres_image_name
+    value: 'postgres-custom'
+
+  - name: book_api_image_name
+    value: 'book-api'
+
+  - name: book_ui_image_name
+    value: 'book-ui'
