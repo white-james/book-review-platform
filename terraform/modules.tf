@@ -106,7 +106,7 @@ module "container_instance" {
     # Nginx Frontend
     book-ui = {
       name   = "book-ui"
-      image  = "${module.container_registry.resource.login_server}/book-ui:latest"
+      image  = "${module.container_registry.resource.login_server}/book-ui:1736276"
       cpu    = "0.5"
       memory = "0.5"
       ports = [
