@@ -46,6 +46,12 @@ resource "kubernetes_persistent_volume_claim" "postgres" {
       }
     }
   }
+
+  wait_until_bound = false
+
+  timeouts {
+    create = "10m"
+  }
 }
 
 # PostgreSQL Deployment
