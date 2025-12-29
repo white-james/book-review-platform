@@ -26,6 +26,21 @@ module "container_registry" {
   zone_redundancy_enabled = false
 }
 
+# Create a user-assigned managed identity for AKS kubelet
+resource "azurerm_user_assigned_identity" "aks_kubelet" {
+  location            = var.azrm_resource_location
+  name                = "${module.naming.kubernetes_cluster.name}-kubelet"
+  resource_group_name = module.resource_group.name
+}
+
+# Grant kubelet identity permission to pull images from ACR
+resource "azurerm_role_assignment" "aks_acr_pull" {
+  principal_id                     = azurerm_user_assigned_identity.aks_kubelet.principal_id
+  role_definition_name             = "AcrPull"
+  scope                            = module.container_registry.resource.id
+  skip_service_principal_aad_check = true
+}
+
 # module "container_instance" {
 #   source = "git::https://github.com/Azure/terraform-azurerm-avm-res-containerinstance-containergroup.git?ref=v0.2.0"
 
@@ -210,13 +225,13 @@ module "aks_cluster" {
   }
   managed_identities = {
     system_assigned = true
+    user_assigned_resource_ids = [
+      azurerm_user_assigned_identity.aks_kubelet.id
+    ]
   }
-}
-
-# Grant AKS kubelet identity permission to pull images from ACR
-resource "azurerm_role_assignment" "aks_acr_pull" {
-  principal_id                     = module.aks_cluster.kubelet_identity_id
-  role_definition_name             = "AcrPull"
-  scope                            = module.container_registry.resource.id
-  skip_service_principal_aad_check = true
+  kubelet_identity = {
+    client_id                 = azurerm_user_assigned_identity.aks_kubelet.client_id
+    object_id                 = azurerm_user_assigned_identity.aks_kubelet.principal_id
+    user_assigned_identity_id = azurerm_user_assigned_identity.aks_kubelet.id
+  }
 }
