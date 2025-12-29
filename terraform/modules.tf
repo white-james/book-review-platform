@@ -26,11 +26,26 @@ module "container_registry" {
   zone_redundancy_enabled = false
 }
 
+# Create a user-assigned managed identity for AKS control plane
+resource "azurerm_user_assigned_identity" "aks_control_plane" {
+  location            = var.azrm_resource_location
+  name                = "${module.naming.kubernetes_cluster.name}-control-plane"
+  resource_group_name = module.resource_group.name
+}
+
 # Create a user-assigned managed identity for AKS kubelet
 resource "azurerm_user_assigned_identity" "aks_kubelet" {
   location            = var.azrm_resource_location
   name                = "${module.naming.kubernetes_cluster.name}-kubelet"
   resource_group_name = module.resource_group.name
+}
+
+# Grant control plane identity "Managed Identity Operator" role on kubelet identity
+resource "azurerm_role_assignment" "aks_control_plane_mio" {
+  principal_id                     = azurerm_user_assigned_identity.aks_control_plane.principal_id
+  role_definition_name             = "Managed Identity Operator"
+  scope                            = azurerm_user_assigned_identity.aks_kubelet.id
+  skip_service_principal_aad_check = true
 }
 
 # Grant kubelet identity permission to pull images from ACR
@@ -225,7 +240,7 @@ module "aks_cluster" {
   }
   managed_identities = {
     user_assigned_resource_ids = [
-      azurerm_user_assigned_identity.aks_kubelet.id
+      azurerm_user_assigned_identity.aks_control_plane.id
     ]
   }
   kubelet_identity = {
@@ -233,4 +248,8 @@ module "aks_cluster" {
     object_id                 = azurerm_user_assigned_identity.aks_kubelet.principal_id
     user_assigned_identity_id = azurerm_user_assigned_identity.aks_kubelet.id
   }
+
+  depends_on = [
+    azurerm_role_assignment.aks_control_plane_mio
+  ]
 }
