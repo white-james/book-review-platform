@@ -319,7 +319,7 @@ resource "kubernetes_service" "book_api" {
       target_port = 3000
     }
 
-    type = "ClusterIP"
+    type = "LoadBalancer"
   }
 }
 
