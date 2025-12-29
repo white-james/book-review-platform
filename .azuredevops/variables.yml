@@ -22,7 +22,7 @@ variables:
   ##############################################################
 
   - name: state-key
-    value: ${{ replace('docker-kubernetes-learning-lab.env.tfstate', 'env', parameters.environment) }}
+    value: ${{ replace('book-review-platform.tfstate', 'env', parameters.environment) }}
 
   # Your Terraform directory
   - name: terraform-directory
