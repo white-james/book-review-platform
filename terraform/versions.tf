@@ -32,9 +32,9 @@ provider "azurerm" {
 provider "random" {
 }
 
-provider "kubernetes" {
-  host                   = module.aks_cluster.name
-  client_certificate     = base64decode(module.aks_cluster.kube_admin_config.client_certificate)
-  client_key             = base64decode(module.aks_cluster.kube_admin_config.client_key)
-  cluster_ca_certificate = base64decode(module.aks_cluster.kube_admin_config.cluster_ca_certificate)
-}
+# provider "kubernetes" {
+#   host                   = module.aks_cluster.name
+#   client_certificate     = base64decode(module.aks_cluster.kube_admin_config.client_certificate)
+#   client_key             = base64decode(module.aks_cluster.kube_admin_config.client_key)
+#   cluster_ca_certificate = base64decode(module.aks_cluster.kube_admin_config.cluster_ca_certificate)
+# }
