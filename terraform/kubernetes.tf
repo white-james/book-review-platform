@@ -319,7 +319,7 @@ resource "kubernetes_service" "book_api" {
       target_port = 3000
     }
 
-    type = "LoadBalancer"
+    type = "ClusterIP"
   }
 }
 
@@ -393,7 +393,7 @@ resource "kubernetes_deployment" "book_ui" {
   }
 }
 
-# Book UI Service (LoadBalancer for external access)
+# Book UI Service (ClusterIP)
 resource "kubernetes_service" "book_ui" {
   metadata {
     name      = "book-ui"
@@ -410,6 +410,71 @@ resource "kubernetes_service" "book_ui" {
       target_port = 80
     }
 
-    type = "LoadBalancer"
+    type = "ClusterIP"
+  }
+}
+
+# Ingress for routing
+resource "kubernetes_ingress_v1" "book_review" {
+  metadata {
+    name      = "book-review-ingress"
+    namespace = kubernetes_namespace.book_review.metadata[0].name
+    annotations = {
+      "nginx.ingress.kubernetes.io/rewrite-target" = "/$2"
+    }
+  }
+
+  spec {
+    ingress_class_name = "nginx"
+
+    rule {
+      http {
+        # API routes
+        path {
+          path      = "/api(/|$)(.*)"
+          path_type = "ImplementationSpecific"
+
+          backend {
+            service {
+              name = kubernetes_service.book_api.metadata[0].name
+              port {
+                number = 3000
+              }
+            }
+          }
+        }
+
+        # UI routes
+        path {
+          path      = "/"
+          path_type = "Prefix"
+
+          backend {
+            service {
+              name = kubernetes_service.book_ui.metadata[0].name
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  depends_on = [helm_release.nginx_ingress]
+}
+
+# Install NGINX Ingress Controller via Helm
+resource "helm_release" "nginx_ingress" {
+  name             = "nginx-ingress"
+  repository       = "https://kubernetes.github.io/ingress-nginx"
+  chart            = "ingress-nginx"
+  namespace        = "ingress-nginx"
+  create_namespace = true
+
+  set {
+    name  = "controller.service.type"
+    value = "LoadBalancer"
   }
 }

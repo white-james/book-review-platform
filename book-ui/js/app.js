@@ -1,10 +1,10 @@
 // Book Review Platform JavaScript
 
 // Configuration
-// Use relative URL when deployed, localhost for local development
+// Use relative URL - works in all environments (Docker, ACI, AKS)
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api' 
-    : `http://${window.location.hostname}:3000/api`;
+    : '/api';  // Relative path - ingress/reverse proxy handles routing
 let currentUser = null;
 
 // Initialize app
