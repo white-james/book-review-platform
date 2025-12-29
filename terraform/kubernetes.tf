@@ -420,7 +420,7 @@ resource "kubernetes_ingress_v1" "book_review" {
     name      = "book-review-ingress"
     namespace = kubernetes_namespace.book_review.metadata[0].name
     annotations = {
-      "nginx.ingress.kubernetes.io/rewrite-target" = "/$2"
+      "nginx.ingress.kubernetes.io/use-regex" = "true"
     }
   }
 
@@ -429,10 +429,10 @@ resource "kubernetes_ingress_v1" "book_review" {
 
     rule {
       http {
-        # API routes
+        # API routes - pass through as-is (no rewrite)
         path {
-          path      = "/api(/|$)(.*)"
-          path_type = "ImplementationSpecific"
+          path      = "/api"
+          path_type = "Prefix"
 
           backend {
             service {
