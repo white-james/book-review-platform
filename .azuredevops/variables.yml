@@ -43,7 +43,7 @@ variables:
 
   # Using the same service connection for all environments (same subscription)
   - name: acr_service_connection
-    value: 'bookreviewdevacr'
+    value: 'JamesTest - Docker'
 
   - name: image_tag
     value: '$(Build.BuildId)'
