@@ -1,6 +1,6 @@
 # Book Review Platform
 
-A full-stack web application for book reviews built with Node.js, PostgreSQL, and served with Nginx. This project is designed for learning Docker.
+A full-stack web application for book reviews built with Node.js, PostgreSQL, and served with Nginx. This project demonstrates modern cloud-native development practices with multiple deployment options.
 
 ## 🚀 Tech Stack
 
@@ -10,6 +10,9 @@ A full-stack web application for book reviews built with Node.js, PostgreSQL, an
 - **Web Server:** Nginx (for serving static files)
 - **Authentication:** JWT (JSON Web Tokens)
 - **Containerization:** Docker & Docker Compose
+- **Infrastructure as Code:** Terraform
+- **Cloud Platform:** Microsoft Azure (ACI & AKS)
+- **CI/CD:** Azure DevOps Pipelines
 
 ## 📋 Features
 
@@ -27,11 +30,43 @@ A full-stack web application for book reviews built with Node.js, PostgreSQL, an
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Backend API   │    │   Database      │
 │   (Nginx)       │───▶│   (Node.js)     │───▶│   (PostgreSQL)  │
-│   Port: 8080    │    │   Port: 3000    │    │   Port: 5432    │
+│   Port: 80      │    │   Port: 3000    │    │   Port: 5432    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## 🐳 Docker Setup
+## 🌐 Deployment Options
+
+This project supports three deployment methods:
+
+| Environment | Technology | Use Case |
+|-------------|------------|----------|
+| **Local** | Docker Compose | Development & Testing |
+| **Azure Container Instances** | Terraform + ACI | Simple cloud deployment |
+| **Azure Kubernetes Service** | Terraform + AKS + Helm | Production-grade deployment |
+
+### Deployment Architecture Comparison
+
+```
+Local (Docker Compose)
+├── docker-compose.yml
+└── All containers on localhost
+
+Azure Container Instances (ACI)
+├── Terraform manages container groups
+├── Azure Container Registry for images
+└── Simple, serverless containers
+
+Azure Kubernetes Service (AKS)
+├── Terraform manages AKS cluster
+├── Helm for NGINX Ingress Controller
+├── Kubernetes Ingress for routing
+├── Persistent Volumes for database
+└── User-assigned Managed Identities for security
+```
+
+---
+
+## 🐳 Option 1: Local Docker Deployment
 
 ### Prerequisites
 
@@ -42,7 +77,7 @@ A full-stack web application for book reviews built with Node.js, PostgreSQL, an
 
 1. Clone this repository
 2. Navigate to the project directory
-3. Run with the PowerShell script (recommended):
+3. Run with the PowerShell script:
 
 ```powershell
 # Build and start all services
@@ -52,89 +87,197 @@ A full-stack web application for book reviews built with Node.js, PostgreSQL, an
 docker-compose up --build -d
 ```
 
-1. Access the application:
+4. Access the application:
    - **Frontend:** http://localhost:8080
    - **API:** http://localhost:3000
-   - **Database:** localhost:5432
 
 ### PowerShell Script Commands
 
 ```powershell
-# Start all services (default)
-.\start.ps1
-
-# View all available commands
-.\start.ps1 help
-
-# View logs from all services
-.\start.ps1 logs
-
-# Stop all services
-.\start.ps1 stop
-
-# Restart services
-.\start.ps1 restart
-
-# Clean up (remove containers and volumes)
-.\start.ps1 clean
-
-# Build images only
-.\start.ps1 build
-
-# Show service status
-.\start.ps1 status
+.\start.ps1 start    # Start all services
+.\start.ps1 stop     # Stop all services
+.\start.ps1 logs     # View logs
+.\start.ps1 restart  # Restart services
+.\start.ps1 clean    # Remove containers and volumes
+.\start.ps1 status   # Show service status
+.\start.ps1 help     # View all commands
 ```
 
-### Manual Docker Compose Commands
+---
 
-```bash
-# Build individual services
-docker-compose build book-api
-docker-compose build book-ui
+## ☁️ Option 2: Azure Container Instances (ACI)
 
-# Start specific services
-docker-compose up postgres
-docker-compose up book-api
-docker-compose up book-ui
+Deploy to Azure Container Instances for a simple, serverless container experience.
 
-# View logs
-docker-compose logs -f book-api
-docker-compose logs -f book-ui
+### Prerequisites
 
-# Stop services
-docker-compose down
+- Azure subscription
+- Azure CLI installed
+- Terraform installed
+- Azure DevOps (for CI/CD)
 
-# Stop and remove volumes
-docker-compose down -v
+### Infrastructure Components
+
+- **Resource Group** - Logical container for resources
+- **Azure Container Registry (ACR)** - Private Docker registry
+- **Container Group** - Runs all three containers (UI, API, PostgreSQL)
+
+### Deployment
+
+```powershell
+cd terraform
+
+# Initialize Terraform
+terraform init
+
+# Plan deployment (ACI)
+terraform plan -var="deployment_target=aci"
+
+# Apply
+terraform apply -var="deployment_target=aci"
 ```
+
+---
+
+## ☸️ Option 3: Azure Kubernetes Service (AKS)
+
+Deploy to AKS for a production-grade, scalable Kubernetes environment.
+
+### Prerequisites
+
+- Azure subscription
+- Azure CLI installed
+- Terraform installed
+- kubectl installed
+- Helm installed
+- Azure DevOps (for CI/CD)
+
+### Infrastructure Components
+
+- **Resource Group** - Logical container for resources
+- **Azure Container Registry (ACR)** - Private Docker registry
+- **AKS Cluster** - Managed Kubernetes cluster
+- **User-Assigned Managed Identities** - Secure authentication
+  - Control Plane Identity - Manages Azure resources
+  - Kubelet Identity - Pulls images from ACR
+- **NGINX Ingress Controller** - Routes traffic via Helm
+- **Kubernetes Resources:**
+  - Namespace
+  - Deployments (postgres, book-api, book-ui)
+  - Services (ClusterIP)
+  - Ingress (path-based routing)
+  - PersistentVolumeClaim (database storage)
+  - Secrets (database credentials, JWT)
+
+### Architecture
+
+```
+                    ┌─────────────────────────────────────────┐
+                    │           Azure Kubernetes Service       │
+                    │                                          │
+Internet ──────────▶│  ┌─────────────────────────────────┐    │
+                    │  │      NGINX Ingress Controller    │    │
+                    │  │         (LoadBalancer IP)        │    │
+                    │  └───────────────┬─────────────────┘    │
+                    │                  │                       │
+                    │    ┌─────────────┴─────────────┐        │
+                    │    │                           │        │
+                    │    ▼                           ▼        │
+                    │  /api/*                       /*        │
+                    │  ┌─────────┐              ┌─────────┐   │
+                    │  │ book-api│              │ book-ui │   │
+                    │  │ (x2)    │              │ (x2)    │   │
+                    │  └────┬────┘              └─────────┘   │
+                    │       │                                  │
+                    │       ▼                                  │
+                    │  ┌─────────┐    ┌─────────────────┐     │
+                    │  │postgres │───▶│ Azure Managed   │     │
+                    │  │ (x1)    │    │ Disk (10Gi)     │     │
+                    │  └─────────┘    └─────────────────┘     │
+                    │                                          │
+                    └─────────────────────────────────────────┘
+```
+
+### Deployment
+
+```powershell
+cd terraform
+
+# Initialize Terraform
+terraform init
+
+# Plan deployment (AKS)
+terraform plan -var="deployment_target=aks"
+
+# Apply
+terraform apply -var="deployment_target=aks"
+```
+
+### Accessing the Application
+
+```powershell
+# Get AKS credentials
+az aks get-credentials --resource-group <rg-name> --name <aks-name>
+
+# Get the Ingress IP
+kubectl get ingress -n book-review-platform
+
+# Access the app at http://<INGRESS_IP>
+```
+
+### Useful kubectl Commands
+
+```powershell
+# View all resources
+kubectl get all -n book-review-platform
+
+# View pod logs
+kubectl logs -l app=book-api -n book-review-platform
+
+# Restart deployments
+kubectl rollout restart deployment/book-api -n book-review-platform
+
+# Check Ingress status
+kubectl describe ingress book-review-ingress -n book-review-platform
+```
+
+---
 
 ## 📁 Project Structure
 
 ```
 book-review-platform/
+├── .azuredevops/             # Azure DevOps Pipelines
+│   ├── docker_build_and_push.yml
+│   ├── terraform_deploy.yml
+│   └── variables.yml
 ├── book-api/                 # Node.js Backend
 │   ├── routes/
-│   │   ├── auth.js          # Authentication routes
-│   │   ├── books.js         # Book management routes
-│   │   └── reviews.js       # Review management routes
 │   ├── middleware/
-│   │   └── auth.js          # JWT authentication middleware
-│   ├── server.js            # Main application server
-│   ├── package.json         # Node.js dependencies
-│   ├── Dockerfile           # Backend container config
-│   └── .env.example         # Environment variables template
+│   ├── server.js
+│   ├── package.json
+│   └── Dockerfile
 ├── book-ui/                  # Frontend
 │   ├── css/
-│   │   └── style.css        # Custom styles
 │   ├── js/
-│   │   └── app.js           # Frontend JavaScript
-│   ├── index.html           # Main HTML page
-│   ├── nginx.conf           # Nginx configuration
-│   └── Dockerfile           # Frontend container config
+│   │   └── app.js           # Auto-detects environment for API URL
+│   ├── index.html
+│   ├── nginx.conf
+│   └── Dockerfile
 ├── database/
-│   └── init.sql             # Database initialization script
-└── docker-compose.yml       # Multi-container configuration
+│   └── init.sql
+├── terraform/                # Infrastructure as Code
+│   ├── modules.tf           # Azure modules (RG, ACR, AKS)
+│   ├── kubernetes.tf        # K8s resources (deployments, services, ingress)
+│   ├── versions.tf          # Provider configuration
+│   ├── variables.tf         # Input variables
+│   └── outputs.tf           # Output values
+├── docker-compose.yml        # Local development
+├── start.ps1                 # Local dev helper script
+└── README.md
 ```
+
+---
 
 ## 🔌 API Endpoints
 
@@ -150,40 +293,59 @@ book-review-platform/
 
 ### Reviews
 - `GET /api/reviews/book/:bookId` - Get reviews for a book
-- `GET /api/reviews/user/:userId` - Get reviews by user
 - `POST /api/reviews` - Add review (authenticated)
 - `PUT /api/reviews/:id` - Update review (authenticated)
 - `DELETE /api/reviews/:id` - Delete review (authenticated)
 
+---
+
+## 🔒 Security Features
+
+- **JWT authentication** with expiration
+- **Password hashing** with bcrypt
+- **SQL injection protection** with parameterized queries
+- **Azure Managed Identities** for secure ACR access (no stored credentials)
+- **Kubernetes Secrets** for sensitive configuration
+- **NGINX security headers**
+
+---
+
 ## 🗄️ Database Schema
 
 ### Users Table
-- `id` (Primary Key)
-- `username` (Unique)
-- `email` (Unique)
-- `password_hash`
-- `created_at`
+| Column | Type | Description |
+|--------|------|-------------|
+| id | SERIAL | Primary Key |
+| username | VARCHAR | Unique username |
+| email | VARCHAR | Unique email |
+| password_hash | VARCHAR | Bcrypt hash |
+| created_at | TIMESTAMP | Creation time |
 
 ### Books Table
-- `id` (Primary Key)
-- `title`
-- `author`
-- `isbn`
-- `description`
-- `created_at`
+| Column | Type | Description |
+|--------|------|-------------|
+| id | SERIAL | Primary Key |
+| title | VARCHAR | Book title |
+| author | VARCHAR | Author name |
+| isbn | VARCHAR | ISBN number |
+| description | TEXT | Book description |
+| created_at | TIMESTAMP | Creation time |
 
 ### Reviews Table
-- `id` (Primary Key)
-- `user_id` (Foreign Key → users.id)
-- `book_id` (Foreign Key → books.id)
-- `rating` (1-5)
-- `review_text`
-- `created_at`
+| Column | Type | Description |
+|--------|------|-------------|
+| id | SERIAL | Primary Key |
+| user_id | INTEGER | FK → users.id |
+| book_id | INTEGER | FK → books.id |
+| rating | INTEGER | 1-5 stars |
+| review_text | TEXT | Review content |
+| created_at | TIMESTAMP | Creation time |
 
-## 🔒 Environment Variables
+---
 
-Create a `.env` file in the `book-api` directory:
+## 🔧 Environment Variables
 
+### Local Development (.env)
 ```env
 NODE_ENV=development
 PORT=3000
@@ -195,43 +357,36 @@ DB_USER=postgres
 DB_PASSWORD=password
 ```
 
-## 🧪 Testing the Application
+### Azure (via Terraform variables)
+```hcl
+db_password = "secure-password"
+jwt_secret  = "secure-jwt-secret"
+db_name     = "bookreviews"
+db_user     = "postgres"
+```
 
-1. **Register a new user** at http://localhost:8080
-2. **Login** with your credentials
-3. **Add a new book** using the "Add New Book" button
-4. **Browse books** and click on any book to see details
-5. **Write reviews** by clicking "Write a Review" on any book
-6. **View your reviews** in the "My Reviews" section
+---
 
-## 📝 Development Notes
+## 📝 CI/CD Pipelines
 
-### Docker Optimization Features
-- **Multi-stage builds** for smaller production images
-- **Non-root users** for security
-- **Health checks** for all services
-- **Volume persistence** for database data
-- **Network isolation** between services
+### Docker Build & Push Pipeline
+- Triggers on changes to `book-api/` or `book-ui/`
+- Builds Docker images
+- Pushes to Azure Container Registry
 
-### Security Features
-- JWT authentication with expiration
-- Password hashing with bcrypt
-- SQL injection protection with parameterized queries
-- XSS protection with input sanitization
-- Nginx security headers
+### Terraform Deploy Pipeline
+- Deploys infrastructure to Azure
+- Supports both ACI and AKS targets
+- Manages Kubernetes resources
 
-### Performance Features
-- Database indexing for common queries
-- Nginx gzip compression
-- Static asset caching
-- Connection pooling for database
+---
 
 ## 🤝 Contributing
 
 This is a learning project! Feel free to:
 - Add new features
 - Improve the UI/UX
-- Optimize Docker configurations
+- Optimize Docker/Terraform configurations
 - Add tests
 - Improve documentation
 
