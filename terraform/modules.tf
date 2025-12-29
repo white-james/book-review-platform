@@ -224,7 +224,6 @@ module "aks_cluster" {
     start_date  = "2024-10-15T00:00:00Z"
   }
   managed_identities = {
-    system_assigned = true
     user_assigned_resource_ids = [
       azurerm_user_assigned_identity.aks_kubelet.id
     ]
