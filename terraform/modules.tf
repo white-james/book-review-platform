@@ -213,9 +213,9 @@ module "aks_cluster" {
   }
 }
 
-# Grant AKS permission to pull images from ACR
+# Grant AKS kubelet identity permission to pull images from ACR
 resource "azurerm_role_assignment" "aks_acr_pull" {
-  principal_id                     = module.aks_cluster.cluster_identity.principal_id
+  principal_id                     = module.aks_cluster.kubelet_identity_id
   role_definition_name             = "AcrPull"
   scope                            = module.container_registry.resource.id
   skip_service_principal_aad_check = true
