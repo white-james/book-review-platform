@@ -1,10 +1,11 @@
 // Book Review Platform JavaScript
 
 // Configuration
-// Use relative URL - works in all environments (Docker, ACI, AKS)
+// Use relative URL - works in all environments (Docker, ACI, AKS with Ingress)
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api' 
-    : '/api';  // Relative path - ingress/reverse proxy handles routing
+    : '/api';  // Relative path - ingress handles routing on port 80
+
 let currentUser = null;
 
 // Initialize app
