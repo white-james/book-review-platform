@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: book-review-platform
+  namespace: argocd
+  # Finalizer ensures cascading deletes
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  
+  source:
+    repoURL: https://github.com/jameswhite-bca/book-review-platform.git
+    targetRevision: main
+    path: k8s
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: book-review-platform
+  
+  syncPolicy:
+    automated:
+      prune: true      # Automatically delete resources removed from Git
+      selfHeal: true   # Automatically sync when cluster state differs from Git
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true  # Create namespace if it doesn't exist
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Ignore differences for fields that are expected to change
+  ignoreDifferences:
+  - group: apps
+    kind: Deployment
+    jsonPointers:
+    - /spec/replicas  # Ignore if HPA is managing replicas

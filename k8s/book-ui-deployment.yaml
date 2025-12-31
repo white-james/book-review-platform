@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-ui
+  namespace: book-review-platform
+  labels:
+    app: book-ui
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: book-ui
+  template:
+    metadata:
+      labels:
+        app: book-ui
+    spec:
+      containers:
+      - name: book-ui
+        image: <ACR_LOGIN_SERVER>/book-ui:latest  # Will be updated by ArgoCD image updater or CI/CD
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5

@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: book-review-ingress
+  namespace: book-review-platform
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    # Uncomment when using SSL with cert-manager
+    # cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  # Uncomment for SSL/TLS
+  # tls:
+  # - hosts:
+  #   - bookreview.yourdomain.com
+  #   secretName: book-review-tls
+  rules:
+  # Uncomment and set your domain when using host-based routing
+  # - host: bookreview.yourdomain.com
+  - http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: book-api
+            port:
+              number: 3000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: book-ui
+            port:
+              number: 80
