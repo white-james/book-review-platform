@@ -7,7 +7,7 @@ This directory contains Kubernetes manifests for deploying the Book Review Platf
 ```
 k8s/
 ├── namespace.yaml              # Namespace definition
-├── secrets.yaml                # Application secrets (use External Secrets in prod)
+├── external-secret.yaml        # External Secrets configuration for Azure Key Vault
 ├── postgres-pvc.yaml           # Persistent storage for PostgreSQL
 ├── postgres-deployment.yaml    # PostgreSQL database
 ├── postgres-service.yaml       # PostgreSQL service
@@ -56,6 +56,18 @@ kubectl apply -f k8s/ingress.yaml
 ```
 
 ## Configuration
+
+### Secrets Management
+
+This application uses **Azure Key Vault + External Secrets Operator** for secure secret management.
+
+**Setup Steps:**
+
+1. Deploy Terraform to create Key Vault and store secrets
+2. Update `external-secret.yaml` with your Key Vault name
+3. External Secrets Operator will automatically sync secrets to Kubernetes
+
+See [EXTERNAL-SECRETS-SETUP.md](EXTERNAL-SECRETS-SETUP.md) for detailed configuration instructions.
 
 ### Container Images
 

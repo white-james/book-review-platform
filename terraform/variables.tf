@@ -103,3 +103,9 @@ variable "jwt_secret" {
   sensitive   = true
   nullable    = false
 }
+
+variable "aks_kubelet_identity_object_id" {
+  description = "Object ID of the AKS kubelet managed identity (from kubernetes-platform repo). This grants AKS access to read secrets from Key Vault."
+  type        = string
+  nullable    = false
+}

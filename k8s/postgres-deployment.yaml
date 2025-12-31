@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: <ACR_LOGIN_SERVER>/postgres-custom:latest  # Will be updated by ArgoCD image updater or CI/CD
+        image: containerplatformdevacr.azurecr.io/postgres-custom:latest  # Will be updated by ArgoCD image updater or CI/CD
         ports:
         - containerPort: 5432
           name: postgres

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: book-ui
-        image: <ACR_LOGIN_SERVER>/book-ui:latest  # Will be updated by ArgoCD image updater or CI/CD
+        image: containerplatformdevacr.azurecr.io/book-ui:latest  # Will be updated by ArgoCD image updater or CI/CD
         ports:
         - containerPort: 80
           name: http
