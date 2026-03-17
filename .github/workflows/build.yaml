@@ -23,5 +23,6 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
+          context: "{{defaultContext}}:book-ui"
           push: true
-          tags: jameswhite83/book-review-platform:latest
+          tags: jameswhite83/book-ui:latest
