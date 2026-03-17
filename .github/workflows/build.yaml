@@ -17,7 +17,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: "jameswhite83"
+          username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push image
@@ -25,4 +25,18 @@ jobs:
         with:
           context: "{{defaultContext}}:book-ui"
           push: true
-          tags: jameswhite83/book-ui:latest
+          tags: book-ui:v1.0.0
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: "{{defaultContext}}:book-api"
+          push: true
+          tags: book-api:v1.0.0
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: "{{defaultContext}}:book-db"
+          push: true
+          tags: book-db:v1.0.0
