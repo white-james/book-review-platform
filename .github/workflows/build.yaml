@@ -25,18 +25,18 @@ jobs:
         with:
           context: "{{defaultContext}}:book-ui"
           push: true
-          tags: book-ui:v1.0.0
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/book-ui:v1.0.0
 
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           context: "{{defaultContext}}:book-api"
           push: true
-          tags: book-api:v1.0.0
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/book-api:v1.0.0
 
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           context: "{{defaultContext}}:database"
           push: true
-          tags: book-db:v1.0.0
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/book-db:v1.0.0
