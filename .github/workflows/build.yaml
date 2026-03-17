@@ -1,14 +1,23 @@
-name: Build and Push Image
+name: Build and Push Images
 
 on:
   push:
-    branches:
-      - main
-      - feature/*
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - name: book-ui
+            context: "{{defaultContext}}:book-ui"
+          - name: book-api
+            context: "{{defaultContext}}:book-api"
+          - name: book-db
+            context: "{{defaultContext}}:database"
 
     steps:
       - name: Checkout
@@ -20,23 +29,13 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push image
-        uses: docker/build-push-action@v5
-        with:
-          context: "{{defaultContext}}:book-ui"
-          push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/book-ui:v1.0.0
+      - name: Extract version
+        id: vars
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-      - name: Build and push image
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: "{{defaultContext}}:book-api"
+          context: ${{ matrix.service.context }}
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/book-api:v1.0.0
-
-      - name: Build and push image
-        uses: docker/build-push-action@v5
-        with:
-          context: "{{defaultContext}}:database"
-          push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/book-db:v1.0.0
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.service.name }}:${{ steps.vars.outputs.VERSION }}
