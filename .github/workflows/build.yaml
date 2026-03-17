@@ -37,6 +37,6 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
-          context: "{{defaultContext}}:book-db"
+          context: "{{defaultContext}}:database"
           push: true
           tags: book-db:v1.0.0
