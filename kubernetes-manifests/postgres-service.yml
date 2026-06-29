@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: book-ui
+  name: postgres
   namespace: book-review-platform
 spec:
   selector:
-    app: book-ui
+    app: postgres
   ports:
-  - port: 80
-    targetPort: 80
-  type: ClusterIP
+  - port: 5432
+    targetPort: 5432
+  type: NodePort
