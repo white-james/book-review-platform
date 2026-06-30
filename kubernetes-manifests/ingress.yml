@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: book-review-ingress
+  namespace: book-review-platform
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: book-ui
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix # No annotations, no regex. Pure path passthrough.
+        backend:
+          service:
+            name: book-api
+            port:
+              number: 3000
