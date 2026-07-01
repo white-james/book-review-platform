@@ -2,7 +2,23 @@
 
 This directory contains Kubernetes manifests for deploying the Book Review Platform application.
 
-## Deployment
+## Deployment Methods
+
+### Option 1: ArgoCD (Recommended for GitOps)
+
+The application is configured to be deployed via ArgoCD. Apply the ArgoCD Application manifest from the root of the repository:
+
+```bash
+kubectl apply -f application.yml
+```
+
+ArgoCD will:
+- Automatically sync the k8s manifests to your cluster
+- Monitor for changes in the Git repository
+- Self-heal if cluster state drifts from Git
+- Provide a visual UI for deployment status
+
+### Option 2: Manual kubectl apply
 
 For testing or manual deployment:
 
@@ -20,6 +36,7 @@ kubectl apply -f kubernetes-manifests/book-api-deployment.yml
 kubectl apply -f kubernetes-manifests/book-api-service.yml
 kubectl apply -f kubernetes-manifests/book-ui-deployment.yml
 kubectl apply -f kubernetes-manifests/book-ui-service.yml
+kubectl apply -f kubernetes-manifests/ingress.yml
 ```
 
 ## Testing The Book Review Platform locally using KIND
